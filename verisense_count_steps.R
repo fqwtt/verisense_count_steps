@@ -97,7 +97,7 @@ verisense_count_steps <- function(input_data=runif(500,min=-1.5,max=1.5), coeffs
     if (length(peak_info) > 10) {  # there must be at least two steps
       num_peaks <- length(peak_info[,1]) # 计算peak_info矩阵中的峰值数量
       
-      no_steps = FALSE # 初始化一个名为no_steps的变量，其值为FALSE，用于表示是否检测到步伐。
+      no_steps = FALSE # 初始化一个名为no_steps的变量，其值为FALSE，用于表示是否检测到步伐
       
       # 检查是否检测到至少两个峰值
       if (num_peaks > 2) {
@@ -137,22 +137,29 @@ verisense_count_steps <- function(input_data=runif(500,min=-1.5,max=1.5), coeffs
       # 根据sim_thres过滤峰值，仅保留那些相似性大于sim_thres的峰值
       peak_info <- peak_info[peak_info[,4] > sim_thres,]  # filter based on sim_thres
       
-      # 上一行代码可能会导致peak_info矩阵的第一列出现NA值。这行代码检查第一列中的每个元素是否为NA，并仅保留不包含NA值的行。
+      # 上一行代码可能会导致peak_info矩阵的第一列出现NA值。这行代码检查第一列中的每个元素是否为NA，并仅保留不包含NA值的行
       peak_info <- peak_info[is.na(peak_info[,1])!=TRUE,] # previous statement can result in an NA in col-1
       
       
       # calculate continuity
-      # 计算峰值之间的连续性，并根据一系列阈值和参数对峰值进行过滤
+      # 计算峰值之间的连续性，并根据连续性阈值（cont_thres）和连续窗口大小（cont_win_size）对峰值进行过滤
+      # 检查peak_info矩阵的第三列（周期性）的长度是否大于5
       if (length(peak_info[,3]) > 5) {
-        end_for <- length(peak_info[,3])-1
+        end_for <- length(peak_info[,3])-1 # 计算for循环的结束值，为peak_info矩阵的第三列长度减1
         for (i in cont_thres:end_for) {
           # for each bw peak period calculate acc var
+          
+          # 初始化一个名为v_count的计数器，用于计算连续窗口中方差大于阈值（var_thres）的窗口数量
           v_count <- 0 # count how many windows were over the variance threshold
           for (x in 1:cont_thres) {
+            # 检查当前窗口内的加速度数据acc的方差是否大于var_thres。如果是，则将v_count计数器加1
             if (var(acc[peak_info[i-x+1,1]:peak_info[i-x+2,1]]) > var_thres) {
               v_count = v_count + 1
             }
           }
+          
+          # 检查v_count计数器是否大于等于cont_win_size（连续窗口大小）
+          # 如果是，则将peak_info矩阵的第五列（连续性）设置为1，否则设置为0
           if (v_count >= cont_win_size) {
             peak_info[i,5] <- 1 # set continuity to 1, otherwise, 0
           } else {
@@ -160,11 +167,18 @@ verisense_count_steps <- function(input_data=runif(500,min=-1.5,max=1.5), coeffs
           }
         }
       } 
+      
+      # 从peak_info矩阵中选择第五列（连续性）值等于1的行，并仅保留第一列（峰值位置），即只保留通过连续性测试的峰值的位置
       peak_info <- peak_info[peak_info[,5]==1,1] # continuity test - only keep locations after this
+      
+      # 上一行代码可能会导致peak_info中出现NA值。这行代码检查peak_info中的每个元素是否为NA，并仅保留不包含NA值的元素
       peak_info <- peak_info[is.na(peak_info)!=TRUE] # previous statement can result in an NA in col-1
       
+      
+      # 检查peak_info是否为空
       if (length(peak_info)==0) {
         # no steps found
+        # 跟29、32行操作一样
         num_seconds = round(length(acc) / fs)
         steps_per_sec = rep(0,num_seconds)
       } else {
@@ -185,13 +199,22 @@ verisense_count_steps <- function(input_data=runif(500,min=-1.5,max=1.5), coeffs
         # }
         
         # for GGIR, output the number of steps in 1 second chunks
+        # 如果检测到
+        # 创建一个序列start_idx_vec，从1到length(acc)，步长为fs。这个序列表示每秒的起始索引
         start_idx_vec <- seq(from=1,to=length(acc),by=fs)
+        
+        # 使用findInterval()函数确定peak_info中每个元素（步伐位置）位于哪个时间段（每秒一个时间段），
+        # 然后使用table()函数计算每个时间段内的步伐数量。
+        # factor()函数用于确保table()函数返回所有可能的时间段，即使某些时间段内没有步伐
         steps_per_sec <- table(factor(findInterval(peak_info, start_idx_vec), levels = seq_along(start_idx_vec)))
+        
+        # 将steps_per_sec转换为数值向量
         steps_per_sec <- as.numeric(steps_per_sec)
       }
     }
   }
-        
+  
+  # 返回steps_per_sec
   return(steps_per_sec)
 
   # # 计算每分钟的步数

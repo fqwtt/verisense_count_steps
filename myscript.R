@@ -1,4 +1,4 @@
-source("~/Desktop/verisense_count_steps.R") # update to local path to verisense_count_steps.R file
+source("~/Desktop/verisense_count_steps/verisense_count_steps.R") # update to local path to verisense_count_steps.R file
 myfun =  list(FUN=verisense_count_steps,
               parameters= c(3, 5, 15, -0.5, 3, 4, 0.001, 1.2),
               expected_sample_rate= 15,
@@ -11,8 +11,8 @@ myfun =  list(FUN=verisense_count_steps,
               timestamp=F,
               reporttype="event")
 library(GGIR)
-GGIR(datadir = "~/Desktop/input/",
-     outputdir="~/Desktop/output",
-     myfun = myfun,
+GGIR(mode=2:2,
+     datadir = "~/Desktop/verisense_count_steps/input/",
+     outputdir="~/Desktop/verisense_count_steps/output",
      do.parallel=TRUE)
 GGIR

@@ -2,6 +2,8 @@ function (mode = 1:5, datadir = c(), outputdir = c(), studyname = c(),
   f0 = 1, f1 = 0, do.report = c(2, 4, 5), configfile = c(), 
   myfun = c(), verbose = TRUE, ...) 
 {
+  # 检查传递给GGIR()函数的额外参数是否存在重复的参数名
+  # 如果存在重复的参数名，会根据参数值是否一致给出相应的警告信息
   input = list(...)
   if (length(input) > 0) {
     if (length(input) > 1) {
@@ -20,6 +22,8 @@ function (mode = 1:5, datadir = c(), outputdir = c(), studyname = c(),
       }
     }
   }
+  
+  # 以下代码主要完成以下几个任务：修复文件路径、检查输出目录是否存在、确定要分析的文件范围（f0和f1）
   outputdir = gsub(pattern = "\\\\", replacement = "/", x = outputdir)
   datadir = gsub(pattern = "\\\\", replacement = "/", x = datadir)
   filelist = isfilelist(datadir)
@@ -43,6 +47,8 @@ function (mode = 1:5, datadir = c(), outputdir = c(), studyname = c(),
       f1 = length(datadir)
     }
   }
+  
+  # 以下代码的主要目的是根据mode参数设置哪些分析阶段将被执行，并处理输入文件路径和输出文件路径
   dopart1 = dopart2 = dopart3 = dopart4 = dopart5 = FALSE
   if (length(which(mode == 0)) > 0) {
     dopart1 = dopart2 = dopart3 = dopart4 = dopart5 = TRUE
@@ -72,6 +78,8 @@ function (mode = 1:5, datadir = c(), outputdir = c(), studyname = c(),
       "/")))]
     metadatadir = paste0(outputdir, "/output_", outputfoldername)
   }
+  
+  # 以下代码的主要目的是处理配置文件（configfile），检查其存在和格式是否正确
   configfile_csv = c()
   ex = "csv"
   if (length(configfile) > 0) {
@@ -97,6 +105,11 @@ function (mode = 1:5, datadir = c(), outputdir = c(), studyname = c(),
       }
     }
   }
+  
+  # 以下代码主要执行三个任务
+  # 1.从configfile_csv中提取参数并将它们分配给不同的参数列表。
+  # 2.检查参数设置以确保分析可以正常进行。
+  # 3.检查所需的R软件包是否已安装。
   params = extract_params(input = input, configfile_csv = configfile_csv)
   params_sleep = params$params_sleep
   params_metrics = params$params_metrics
@@ -187,6 +200,11 @@ function (mode = 1:5, datadir = c(), outputdir = c(), studyname = c(),
       }
     }
   }
+  
+  # 这段代码主要执行三个任务
+  # 1.获取已安装的GGIR软件包的版本信息。
+  # 2.如果verbose参数设置为TRUE，则在控制台输出版本信息、引用建议和可重现性建议。
+  # 3.定义一个名为print_console_header的辅助函数，用于在控制台输出带有标题的分隔线。
   GGIRversion = "could not extract version"
   if (is.element("GGIR", installed.packages()[, 1])) {
     GGIRversion = as.character(utils::packageVersion("GGIR"))
@@ -213,7 +231,11 @@ function (mode = 1:5, datadir = c(), outputdir = c(), studyname = c(),
     cat(paste0(rep("_", options()$width), collapse = ""))
     cat("\n", headerTitle, "\n")
   }
-  if (dopart1 == TRUE) {
+  
+  # 这段代码负责执行GGIR的第一阶段分析，
+  # 包括处理原始加速度计数据、计算基本元数据、处理时期数据以及合并多个记录。
+  # 这是GGIR分析流程的第一个步骤，为后续的分析阶段提供输入数据和基本信息。
+  if (dopart1 == TRUE) { 
     if (verbose == TRUE) 
       print_console_header("Part 1")
     if (!is.null(params_general[["maxRecordingInterval"]]) & 
@@ -250,6 +272,8 @@ function (mode = 1:5, datadir = c(), outputdir = c(), studyname = c(),
         idloc = params_general[["idloc"]], maxRecordingInterval = params_general[["maxRecordingInterval"]])
     }
   }
+  
+  
   if (dopart2 == TRUE) {
     if (verbose == TRUE) 
       print_console_header("Part 2")
@@ -261,6 +285,8 @@ function (mode = 1:5, datadir = c(), outputdir = c(), studyname = c(),
       params_output = params_output, params_general = params_general, 
       verbose = verbose)
   }
+  
+  
   if (dopart3 == TRUE) {
     if (verbose == TRUE) 
       print_console_header("Part 3")
