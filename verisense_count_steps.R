@@ -5,9 +5,9 @@ verisense_count_steps <- function(input_data=runif(500,min=-1.5,max=1.5), coeffs
   # and then using multiple thresholds to determine if each peak is a step or an artefact.
   # An additional magnitude threshold was added to the algorithm to prevent false positives 
   # in free living data. 
-  #
+  # 
   # returns sample location of each step
-  
+  # .--/---/-.--/./-.-././-./--./.-/../--/..-/--./..-/---/-./..
   # 这种方法是基于在加速度信号的求和与平方后找到峰值，
   # 然后使用多个阈值来判断每个峰值是步伐还是干扰。
   # 为了防止在自由生活数据中出现假阳性，
